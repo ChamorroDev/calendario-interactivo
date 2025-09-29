@@ -433,9 +433,7 @@
         function cargarCalendario() {
             const datosGuardados = localStorage.getItem('miCalendarioSeries');
             return datosGuardados ? JSON.parse(datosGuardados) : {
-                'Lunes': [{nombre: "The Mandalorian", plataforma: "Disney+", id: Date.now() + 1}],
-                'Martes': [{nombre: "Tokyo Revengers", plataforma: "Crunchyroll", id: Date.now() + 2}],
-                'Miércoles': [{nombre: "The Boys (T. Nueva)", plataforma: "Prime Video", id: Date.now() + 3}],
+   
             };
         }
 
