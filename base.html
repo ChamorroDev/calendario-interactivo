@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Calendario Interactivo Drag & Drop</title>
+    <style>
+        /* ==================================== */
+        /* 1. CONFIGURACIÓN DE COLORES Y FUENTES */
+        /* ==================================== */
+        :root {
+            /* Colores de Fondo */
+            --color-fondo-principal: #1a1a2e;
+            --color-fondo-celda: #2c2c44;
+            --color-texto: #e0e0e0;
+            --color-borde: #444466;
+            
+            /* Colores de Plataforma */
+            --color-crunchyroll: #f48a00;
+            --color-primevideo: #0099ff;
+            --color-hbomax: #ffffff;
+            --color-netflix: #e50914;
+            --color-disneyplus: #ffffff; 
+        }
+
+        /* ==================================== */
+        /* 2. ESTILOS GLOBALES Y CALENDARIO */
+        /* ==================================== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--color-fondo-principal);
+            color: var(--color-texto);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1300px;
+            margin: 0 auto 25px auto;
+        }
+
+        h1 {
+            color: white;
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .calendario {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); 
+            border: 1px solid var(--color-borde);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* ==================================== */
+        /* 3. CABECERAS (DÍAS) Y CELDAS */
+        /* ==================================== */
+        .dia-nombre {
+            background-color: #333355;
+            color: white;
+            padding: 15px 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            border-right: 1px solid var(--color-borde);
+        }
+        .dia-nombre:last-child {
+            border-right: none;
+        }
+
+        .celda {
+            min-height: 150px; 
+            padding: 10px;
+            background-color: var(--color-fondo-celda);
+            border-top: 1px solid var(--color-borde);
+            border-right: 1px solid var(--color-borde);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: background-color 0.2s;
+        }
+        .celda:nth-child(7n) {
+            border-right: none;
+        }
+        
+        .drag-over {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ==================================== */
+        /* 4. BLOQUE DE CONTENIDO (SERIE) */
+        /* ==================================== */
+        .contenido {
+            padding: 10px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7); 
+            display: flex; 
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: opacity 0.3s;
+            line-height: 1.2;
+            cursor: grab; /* Indica que el elemento es arrastrable */
+        }
+        
+        /* Contenedor del nombre */
+        .nombre-serie {
+            word-wrap: break-word; 
+            overflow-wrap: break-word; 
+            max-width: calc(100% - 30px);
+        }
+
+        /* Clases de colores de plataforma */
+        .crunchyroll { background-color: var(--color-crunchyroll); }
+        .primevideo { background-color: var(--color-primevideo); }
+        .hbomax { background-color: var(--color-hbomax); }
+        .netflix { background-color: var(--color-netflix); }
+        .disneyplus { background-color: var(--color-disneyplus); } /* NUEVO */
+        
+        /* ==================================== */
+        /* 5. BOTONES Y FORMULARIO */
+        /* ==================================== */
+        .btn-eliminar {
+            background: none;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            margin-left: 5px;
+            padding: 0;
+            line-height: 1;
+        }
+        .btn-eliminar:hover {
+            opacity: 1;
+            color: black;
+            text-shadow: none;
+        }
+
+        .form-agregar {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--color-borde);
+        }
+        .form-agregar input, .form-agregar select, .form-agregar button {
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+        .form-agregar input, .form-agregar select {
+            background-color: #3f3f5a;
+            color: var(--color-texto);
+        }
+        .form-agregar button {
+            background-color: #4CAF50; 
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .form-agregar button:hover {
+            background-color: #45a049;
+        }
+
+        .btn-limpiar {
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-limpiar:hover {
+            background-color: #d32f2f;
+        }
+        
+        .fondo-plataforma {
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: multiply; 
+        }
+        /* ==================================== */
+        /* 6. ESTILOS DE BOTONES SUPERIORES */
+        /* ==================================== */
+        .btn-limpiar, .btn-exportar, .btn-importar {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            color: white;
+        }
+        
+        .btn-limpiar { background-color: #f44336; }
+        .btn-limpiar:hover { background-color: #d32f2f; }
+        .btn-exportar { background-color: #009688; }
+        .btn-exportar:hover { background-color: #00796b; }
+        .btn-importar { background-color: #ff9800; }
+        .btn-importar:hover { background-color: #fb8c00; }
+        
+        #importFile { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>Mi Calendario de Streaming Interactivo</h1>
+        
+        <div class="controles-export-import"> 
+            <button class="btn-exportar" onclick="exportarCalendario()">Exportar</button>
+            <button class="btn-importar" onclick="document.getElementById('importFile').click()">Importar</button>
+            <input type="file" id="importFile" accept=".json" onchange="importarCalendario(event)">
+            <button class="btn-limpiar" onclick="limpiarPlantilla()">Limpiar Toda la Plantilla</button>
+        </div>
+    </div>
+
+    <div class="calendario" id="calendario">
+        <div class="dia-nombre">Lunes</div>
+        <div class="dia-nombre">Martes</div>
+        <div class="dia-nombre">Miércoles</div>
+        <div class="dia-nombre">Jueves</div>
+        <div class="dia-nombre">Viernes</div>
+        <div class="dia-nombre">Sábado</div>
+        <div class="dia-nombre">Domingo</div>
+
+        <div class="celda" data-dia="Lunes"></div>
+        <div class="celda" data-dia="Martes"></div>
+        <div class="celda" data-dia="Miércoles"></div>
+        <div class="celda" data-dia="Jueves"></div>
+        <div class="celda" data-dia="Viernes"></div>
+        <div class="celda" data-dia="Sábado"></div>
+        <div class="celda" data-dia="Domingo"></div>
+        
+    </div>
+
+    <script>
+        const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        const PLATAFORMAS = {
+            'Crunchyroll': { class: 'crunchyroll', color: 'var(--color-crunchyroll)', image: 'logo_crunchy.jpg' },
+            'Prime Video': { class: 'primevideo', color: 'var(--color-primevideo)', image: 'logo_prime.WEBP' },
+            'HBO Max': { class: 'hbomax', color: 'var(--color-hbomax)', image: 'logo_hbo.png' },
+            'Netflix': { class: 'netflix', color: 'var(--color-netflix)', image: 'logo_netflix.png' },
+            'Disney+': { class: 'disneyplus', color: 'var(--color-disneyplus)', image: 'logo_disney.png' }, 
+            'Otro': { class: '', color: '#333333', image: '' }
+        };
+
+        // ===========================================
+        // 1. GESTIÓN DE DATOS Y LOCALSTORAGE
+        // ===========================================
+
+        function cargarCalendario() {
+            const datosGuardados = localStorage.getItem('miCalendarioSeries');
+            return datosGuardados ? JSON.parse(datosGuardados) : {
+                'Lunes': [{nombre: "The Mandalorian", plataforma: "Disney+", id: Date.now() + 1}],
+                'Martes': [{nombre: "Tokyo Revengers", plataforma: "Crunchyroll", id: Date.now() + 2}],
+                'Miércoles': [{nombre: "The Boys (Temporada Nueva)", plataforma: "Prime Video", id: Date.now() + 3}],
+                'Jueves': [{nombre: "House of the Dragon", plataforma: "HBO Max", id: Date.now() + 4}],
+                'Viernes': [{nombre: "Black Mirror", plataforma: "Netflix", id: Date.now() + 5}],
+            };
+        }
+
+        function guardarCalendario(datos) {
+            localStorage.setItem('miCalendarioSeries', JSON.stringify(datos));
+        }
+
+        function agregarItem(dia, nombre, plataforma) {
+            const calendario = cargarCalendario();
+            const nuevoItem = {
+                nombre: nombre,
+                plataforma: plataforma,
+                id: Date.now() 
+            };
+            
+            if (!calendario[dia]) {
+                calendario[dia] = [];
+            }
+            calendario[dia].push(nuevoItem);
+            guardarCalendario(calendario);
+            dibujarCalendario();
+        }
+
+        function importarCalendario(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const datosImportados = JSON.parse(e.target.result);
+                    
+                    const esValido = DIAS.some(dia => Array.isArray(datosImportados[dia]));
+                    
+                    if (esValido && confirm("¿Deseas reemplazar tu calendario actual con los datos importados?")) {
+                        guardarCalendario(datosImportados);
+                        dibujarCalendario();
+                        alert('¡Calendario importado con éxito!');
+                    } else if (!esValido) {
+                        alert('Error: El archivo JSON parece no tener el formato de calendario correcto.');
+                    }
+                } catch (error) {
+                    alert('Error al leer el archivo. Asegúrate de que es un archivo JSON válido.');
+                    console.error('Error de importación:', error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportarCalendario() {
+            const calendarioDatos = cargarCalendario();
+            const datosJSON = JSON.stringify(calendarioDatos, null, 2);
+            
+            const blob = new Blob([datosJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calendario_series_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('¡Calendario exportado con éxito!');
+        }
+
+
+        function eliminarItem(dia, id) {
+            const calendario = cargarCalendario();
+            calendario[dia] = calendario[dia].filter(item => item.id !== id);
+            guardarCalendario(calendario);
+            dibujarCalendario();
+        }
+        
+        function limpiarPlantilla() {
+            if (confirm("¿Estás seguro de que quieres borrar TODAS las series y películas del calendario? Esta acción es irreversible.")) {
+                localStorage.removeItem('miCalendarioSeries');
+                dibujarCalendario();
+            }
+        }
+        
+        function moverItem(origenDia, destinoDia, itemId) {
+            const calendario = cargarCalendario();
+            
+            // 1. Encontrar y extraer el item del día de origen
+            let itemIndex = -1;
+            const itemMovido = calendario[origenDia].find((item, index) => {
+                if (item.id == itemId) {
+                    itemIndex = index;
+                    return true;
+                }
+                return false;
+            });
+
+            if (!itemMovido) return; 
+
+            // 2. Eliminar del origen
+            calendario[origenDia].splice(itemIndex, 1);
+            
+            // 3. Añadir al destino
+            if (!calendario[destinoDia]) {
+                calendario[destinoDia] = [];
+            }
+            calendario[destinoDia].push(itemMovido);
+
+            // 4. Guardar y redibujar
+            guardarCalendario(calendario);
+            dibujarCalendario();
+        }
+
+
+        // ===========================================
+        // 2. DIBUJO Y MANEJO DE DRAG & DROP
+        // ===========================================
+
+        function crearItemHTML(dia, item) {
+            const config = PLATAFORMAS[item.plataforma];
+            
+            let estiloFondo = '';
+            let clases = [config.class];
+
+            if (config.image) {
+                clases.push('fondo-plataforma');
+                // Estilo dinámico para la imagen de fondo con opacidad
+                estiloFondo = `background-image: url('${config.image}'); background-color: ${config.color.replace('var(--', 'rgba(').replace(')', ', 0.7)')};`;
+            } else {
+                estiloFondo = `background-color: ${config.color};`;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'contenido ' + clases.join(' ');
+            div.style = estiloFondo;
+            div.setAttribute('draggable', true); 
+            div.setAttribute('data-id', item.id); 
+            div.setAttribute('data-dia-origen', dia); 
+
+            div.innerHTML = `
+                <span class="nombre-serie">${item.nombre}</span>
+                <button class="btn-eliminar" onclick="eliminarItem('${dia}', ${item.id})">x</button>
+            `;
+
+            div.addEventListener('dragstart', handleDragStart);
+
+            return div;
+        }
+
+        // Funciones de Drag and Drop
+        function handleDragStart(e) {
+            e.dataTransfer.setData('itemId', e.target.getAttribute('data-id'));
+            e.dataTransfer.setData('origenDia', e.target.getAttribute('data-dia-origen'));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); 
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            
+            // Obtener los datos del elemento arrastrado
+            const itemId = e.dataTransfer.getData('itemId');
+            const origenDia = e.dataTransfer.getData('origenDia');
+            
+            // Obtener el día de destino (la celda donde se soltó)
+            const destinoDia = e.currentTarget.getAttribute('data-dia');
+
+            if (origenDia && destinoDia && itemId) {
+                moverItem(origenDia, destinoDia, parseInt(itemId));
+            }
+        }
+
+
+        function crearFormularioHTML(dia) {
+            const form = document.createElement('form');
+            form.className = 'form-agregar';
+            form.innerHTML = `
+                <input type="text" placeholder="Título de la serie/película" required name="nombre">
+                <select name="plataforma">
+                    ${Object.keys(PLATAFORMAS).map(p => `<option value="${p}">${p}</option>`).join('')}
+                </select>
+                <button type="submit">Agregar</button>
+            `;
+            form.onsubmit = function(event) {
+                event.preventDefault();
+                const nombre = event.target.nombre.value;
+                const plataforma = event.target.plataforma.value;
+                agregarItem(dia, nombre, plataforma);
+                event.target.nombre.value = '';
+            };
+            return form;
+        }
+
+        function dibujarCalendario() {
+            const calendarioDatos = cargarCalendario();
+            
+            DIAS.forEach(dia => {
+                const celda = document.querySelector(`.celda[data-dia="${dia}"]`);
+                if (!celda) return;
+                
+                celda.innerHTML = '';
+                
+                // Configurar los eventos de arrastrar y soltar en la celda
+                celda.addEventListener('dragover', handleDragOver);
+                celda.addEventListener('dragleave', handleDragLeave);
+                celda.addEventListener('drop', handleDrop);
+
+                if (calendarioDatos[dia]) {
+                    calendarioDatos[dia].forEach(item => {
+                        celda.appendChild(crearItemHTML(dia, item));
+                    });
+                }
+                
+                celda.appendChild(crearFormularioHTML(dia));
+            });
+        }
+        
+        // Iniciar el calendario y hacer la función de limpieza global
+        document.addEventListener('DOMContentLoaded', dibujarCalendario);
+        window.eliminarItem = eliminarItem;
+        window.limpiarPlantilla = limpiarPlantilla;
+        // La función moverItem es interna, no necesita estar en window.
+        window.exportarCalendario = exportarCalendario;
+        window.importarCalendario = importarCalendario;
+    </script>
+</body>
+</html>
