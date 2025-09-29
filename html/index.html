@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Calendario Interactivo Drag & Drop</title>
+    <title>Mi Calendario Interactivo</title>
     <style>
         /* ==================================== */
         /* 1. CONFIGURACIÓN DE COLORES Y FUENTES */
@@ -20,11 +20,11 @@
             --color-primevideo: #0099ff;
             --color-hbomax: #ffffff;
             --color-netflix: #e50914;
-            --color-disneyplus: #ffffff; 
+            --color-disneyplus: #ffffff;
         }
 
         /* ==================================== */
-        /* 2. ESTILOS GLOBALES Y CALENDARIO */
+        /* 2. ESTILOS GLOBALES Y CONTENEDORES */
         /* ==================================== */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -32,22 +32,76 @@
             padding: 20px;
             background-color: var(--color-fondo-principal);
             color: var(--color-texto);
+            min-width: 300px; /* Asegura un mínimo para evitar problemas */
         }
 
+        /* HEADER y BOTONES */
         .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* Permitir que los elementos se envuelvan en móvil */
             max-width: 1300px;
             margin: 0 auto 25px auto;
         }
 
         h1 {
             color: white;
-            margin: 0;
+            margin: 0 0 10px 0; /* Espacio inferior en móvil */
             font-size: 1.8em;
+            width: 100%; /* Ocupar todo el ancho en móvil */
         }
 
+        .controles-export-import {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap; /* Permitir que los botones se envuelvan */
+            margin-bottom: 15px; /* Espacio con el formulario */
+        }
+
+        /* FORMULARIO SUPERIOR ÚNICO */
+        #formulario-unico {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #333355;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 1300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        #formulario-unico input, 
+        #formulario-unico select,
+        #formulario-unico button {
+            padding: 10px 12px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            background-color: #3f3f5a; 
+            color: var(--color-texto);
+            font-size: 1em;
+            flex-grow: 1;
+            min-width: 100px; /* Base mínima para los campos */
+        }
+        
+        #formulario-unico button {
+            background-color: #1abc9c; 
+            border: none;
+            color: white;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+            min-width: 120px; /* Botón de agregar más prominente */
+        }
+        #formulario-unico button:hover {
+            background-color: #16a085;
+            transform: translateY(-1px);
+        }
+
+
+        /* ==================================== */
+        /* 3. ESTILOS DE CALENDARIO (GRID) */
+        /* ==================================== */
         .calendario {
             display: grid;
             grid-template-columns: repeat(7, 1fr); 
@@ -59,9 +113,6 @@
             margin: 0 auto;
         }
 
-        /* ==================================== */
-        /* 3. CABECERAS (DÍAS) Y CELDAS */
-        /* ==================================== */
         .dia-nombre {
             background-color: #333355;
             color: white;
@@ -107,28 +158,31 @@
             display: flex; 
             justify-content: space-between;
             align-items: flex-start;
-            transition: opacity 0.3s;
             line-height: 1.2;
-            cursor: grab; /* Indica que el elemento es arrastrable */
+            cursor: grab;
         }
-        
-        /* Contenedor del nombre */
         .nombre-serie {
+            /* MANTENER ESTO EN VERSIÓN ESCRITORIO */
             word-wrap: break-word; 
             overflow-wrap: break-word; 
             max-width: calc(100% - 30px);
+            
+            /* NUEVO: Forzar el ajuste de palabras en caso de títulos muy largos sin espacios */
+            word-break: break-all; /* Fuerza el salto de línea incluso en palabras largas */
         }
-
-        /* Clases de colores de plataforma */
+        /* [Clases de colores de plataforma y .btn-eliminar...] - Mantenidos igual */
         .crunchyroll { background-color: var(--color-crunchyroll); }
         .primevideo { background-color: var(--color-primevideo); }
         .hbomax { background-color: var(--color-hbomax); }
         .netflix { background-color: var(--color-netflix); }
-        .disneyplus { background-color: var(--color-disneyplus); } /* NUEVO */
+        .disneyplus { background-color: var(--color-disneyplus); }
         
-        /* ==================================== */
-        /* 5. BOTONES Y FORMULARIO */
-        /* ==================================== */
+        .fondo-plataforma {
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: multiply; 
+        }
+
         .btn-eliminar {
             background: none;
             border: none;
@@ -147,57 +201,8 @@
             color: black;
             text-shadow: none;
         }
-
-        .form-agregar {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--color-borde);
-        }
-        .form-agregar input, .form-agregar select, .form-agregar button {
-            padding: 5px;
-            border: none;
-            border-radius: 4px;
-            font-size: 0.8em;
-        }
-        .form-agregar input, .form-agregar select {
-            background-color: #3f3f5a;
-            color: var(--color-texto);
-        }
-        .form-agregar button {
-            background-color: #4CAF50; 
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .form-agregar button:hover {
-            background-color: #45a049;
-        }
-
-        .btn-limpiar {
-            padding: 10px 15px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        .btn-limpiar:hover {
-            background-color: #d32f2f;
-        }
         
-        .fondo-plataforma {
-            background-size: cover;
-            background-position: center;
-            background-blend-mode: multiply; 
-        }
-        /* ==================================== */
-        /* 6. ESTILOS DE BOTONES SUPERIORES */
-        /* ==================================== */
+        /* [Estilos de botones superiores...] - Mantenidos igual */
         .btn-limpiar, .btn-exportar, .btn-importar {
             padding: 10px 15px;
             border: none;
@@ -217,6 +222,115 @@
         
         #importFile { display: none; }
 
+
+        /* ==================================== */
+        /* 5. MEDIA QUERIES (RESPONSIVE) */
+        /* ==================================== */
+
+        /* Para pantallas Medianas (Tablets en horizontal/vertical): 700px a 1000px */
+        @media (max-width: 1000px) {
+            .calendario {
+                /* Cambiar a 3 columnas para tablet */
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            /* Corregir bordes de la nueva cuadrícula */
+            .dia-nombre, .celda {
+                border-right: 1px solid var(--color-borde);
+            }
+            .dia-nombre:nth-child(3n), 
+            .celda:nth-child(3n) {
+                border-right: none;
+            }
+            .celda:nth-child(7n) { /* Eliminar el estilo anterior de 7 columnas */
+                border-right: 1px solid var(--color-borde);
+            }
+        }
+        
+        /* Para pantallas Pequeñas (Móviles): Menos de 700px */
+        @media (max-width: 700px) {
+            body {
+                padding: 10px;
+            }
+            
+            
+            h1 {
+                font-size: 1.5em;
+                text-align: center;
+            }
+            .nombre-serie {
+                max-width: calc(100% - 25px); 
+            }
+            
+            /* Controles y Formulario */
+            .header-container {
+                justify-content: center;
+            }
+            .controles-export-import {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            #formulario-unico {
+                /* Apilar los campos verticalmente */
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+                margin: 15px 0;
+            }
+            #formulario-unico input, 
+            #formulario-unico select,
+            #formulario-unico button {
+                width: 100%; /* Ocupar todo el ancho disponible */
+                min-width: unset;
+                box-sizing: border-box; /* Incluir padding y border en el ancho */
+            }
+            .calendario {
+                display: flex;
+                flex-direction: column;
+                border: none;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            /* ASEGURA EL ANCHO DEL CONTENIDO EN MÓVIL */
+            .contenido {
+                /* Usar el 100% del ancho del padre (la celda) */
+                width: 100%; 
+                /* Garantizar que el padding y border no causen desbordamiento */
+                box-sizing: border-box; 
+            }
+            .dia-nombre {
+                display: none; /* Ocultamos los nombres que están en el header del grid */
+            }
+
+            .celda {
+                /* Asegurar que las celdas se vean como bloques separados */
+                width: 100%;
+                margin-bottom: 10px;
+                border: 1px solid var(--color-borde);
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            }
+            
+            /* TÍTULO VISIBLE DEL DÍA EN MÓVIL (Añadido con JS) */
+            .celda::before {
+                content: attr(data-dia);
+                display: block;
+                font-size: 1.2em;
+                font-weight: bold;
+                color: #1abc9c; /* Color de acento */
+                margin-bottom: 10px;
+                padding-bottom: 5px;
+                border-bottom: 1px solid var(--color-borde);
+            }
+
+            /* Limpiar bordes innecesarios */
+            .celda:nth-child(3n), .celda:nth-child(7n) {
+                border-right: 1px solid var(--color-borde);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -231,7 +345,17 @@
             <button class="btn-limpiar" onclick="limpiarPlantilla()">Limpiar Toda la Plantilla</button>
         </div>
     </div>
-
+    
+    <form id="formulario-unico">
+        <input type="text" placeholder="Título de la serie/película" required name="nombre">
+        <select name="plataforma" required>
+            <option value="" disabled selected>Selecciona Plataforma</option>
+            </select>
+        <select name="dia" required>
+            <option value="" disabled selected>Selecciona Día</option>
+            </select>
+        <button type="submit">Agregar Serie</button>
+    </form>
     <div class="calendario" id="calendario">
         <div class="dia-nombre">Lunes</div>
         <div class="dia-nombre">Martes</div>
@@ -263,7 +387,47 @@
         };
 
         // ===========================================
-        // 1. GESTIÓN DE DATOS Y LOCALSTORAGE
+        // LÓGICA DEL FORMULARIO ÚNICO
+        // ===========================================
+        
+        function inicializarFormularioUnico() {
+            const form = document.getElementById('formulario-unico');
+            const selectDia = form.querySelector('select[name="dia"]');
+            const selectPlataforma = form.querySelector('select[name="plataforma"]');
+
+            // Llenar SELECT de Días
+            DIAS.forEach(dia => {
+                selectDia.innerHTML += `<option value="${dia}">${dia}</option>`;
+            });
+            
+            // Llenar SELECT de Plataformas
+            Object.keys(PLATAFORMAS).forEach(p => {
+                selectPlataforma.innerHTML += `<option value="${p}">${p}</option>`;
+            });
+
+            // Manejar el envío del formulario
+            form.onsubmit = function(event) {
+                event.preventDefault();
+                const nombre = event.target.nombre.value;
+                const plataforma = event.target.plataforma.value;
+                const dia = event.target.dia.value;
+
+                if (nombre && plataforma && dia) {
+                    agregarItem(dia, nombre, plataforma);
+                    
+                    // Resetear los campos después de agregar
+                    event.target.nombre.value = '';
+                    selectPlataforma.value = '';
+                    selectDia.value = '';
+                } else {
+                    alert('Por favor, completa todos los campos (Título, Plataforma y Día).');
+                }
+            };
+        }
+
+
+        // ===========================================
+        // GESTIÓN DE DATOS Y LOCALSTORAGE
         // ===========================================
 
         function cargarCalendario() {
@@ -271,9 +435,7 @@
             return datosGuardados ? JSON.parse(datosGuardados) : {
                 'Lunes': [{nombre: "The Mandalorian", plataforma: "Disney+", id: Date.now() + 1}],
                 'Martes': [{nombre: "Tokyo Revengers", plataforma: "Crunchyroll", id: Date.now() + 2}],
-                'Miércoles': [{nombre: "The Boys (Temporada Nueva)", plataforma: "Prime Video", id: Date.now() + 3}],
-                'Jueves': [{nombre: "House of the Dragon", plataforma: "HBO Max", id: Date.now() + 4}],
-                'Viernes': [{nombre: "Black Mirror", plataforma: "Netflix", id: Date.now() + 5}],
+                'Miércoles': [{nombre: "The Boys (T. Nueva)", plataforma: "Prime Video", id: Date.now() + 3}],
             };
         }
 
@@ -283,18 +445,70 @@
 
         function agregarItem(dia, nombre, plataforma) {
             const calendario = cargarCalendario();
-            const nuevoItem = {
-                nombre: nombre,
-                plataforma: plataforma,
-                id: Date.now() 
-            };
+            const nuevoItem = { nombre, plataforma, id: Date.now() };
             
-            if (!calendario[dia]) {
-                calendario[dia] = [];
-            }
+            if (!calendario[dia]) { calendario[dia] = []; }
             calendario[dia].push(nuevoItem);
+            
             guardarCalendario(calendario);
             dibujarCalendario();
+        }
+
+        function eliminarItem(dia, id) {
+            const calendario = cargarCalendario();
+            calendario[dia] = calendario[dia].filter(item => item.id !== id);
+            guardarCalendario(calendario);
+            dibujarCalendario();
+        }
+        
+        function limpiarPlantilla() {
+            if (confirm("¿Estás seguro de que quieres borrar TODAS las series y películas del calendario? Esta acción es irreversible.")) {
+                localStorage.removeItem('miCalendarioSeries');
+                dibujarCalendario();
+            }
+        }
+        
+        function moverItem(origenDia, destinoDia, itemId) {
+            const calendario = cargarCalendario();
+            
+            let itemIndex = -1;
+            const itemMovido = calendario[origenDia].find((item, index) => {
+                if (item.id == itemId) {
+                    itemIndex = index;
+                    return true;
+                }
+                return false;
+            });
+
+            if (!itemMovido) return; 
+
+            calendario[origenDia].splice(itemIndex, 1);
+            
+            if (!calendario[destinoDia]) {
+                calendario[destinoDia] = [];
+            }
+            calendario[destinoDia].push(itemMovido);
+
+            guardarCalendario(calendario);
+            dibujarCalendario();
+        }
+
+        function exportarCalendario() {
+            const calendarioDatos = cargarCalendario();
+            const datosJSON = JSON.stringify(calendarioDatos, null, 2);
+            
+            const blob = new Blob([datosJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calendario_series_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('¡Calendario exportado con éxito!');
         }
 
         function importarCalendario(event) {
@@ -323,83 +537,20 @@
             reader.readAsText(file);
         }
 
-        function exportarCalendario() {
-            const calendarioDatos = cargarCalendario();
-            const datosJSON = JSON.stringify(calendarioDatos, null, 2);
-            
-            const blob = new Blob([datosJSON], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `calendario_series_${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('¡Calendario exportado con éxito!');
-        }
-
-
-        function eliminarItem(dia, id) {
-            const calendario = cargarCalendario();
-            calendario[dia] = calendario[dia].filter(item => item.id !== id);
-            guardarCalendario(calendario);
-            dibujarCalendario();
-        }
-        
-        function limpiarPlantilla() {
-            if (confirm("¿Estás seguro de que quieres borrar TODAS las series y películas del calendario? Esta acción es irreversible.")) {
-                localStorage.removeItem('miCalendarioSeries');
-                dibujarCalendario();
-            }
-        }
-        
-        function moverItem(origenDia, destinoDia, itemId) {
-            const calendario = cargarCalendario();
-            
-            // 1. Encontrar y extraer el item del día de origen
-            let itemIndex = -1;
-            const itemMovido = calendario[origenDia].find((item, index) => {
-                if (item.id == itemId) {
-                    itemIndex = index;
-                    return true;
-                }
-                return false;
-            });
-
-            if (!itemMovido) return; 
-
-            // 2. Eliminar del origen
-            calendario[origenDia].splice(itemIndex, 1);
-            
-            // 3. Añadir al destino
-            if (!calendario[destinoDia]) {
-                calendario[destinoDia] = [];
-            }
-            calendario[destinoDia].push(itemMovido);
-
-            // 4. Guardar y redibujar
-            guardarCalendario(calendario);
-            dibujarCalendario();
-        }
-
-
         // ===========================================
-        // 2. DIBUJO Y MANEJO DE DRAG & DROP
+        // DIBUJO Y DRAG & DROP
         // ===========================================
-
+        
         function crearItemHTML(dia, item) {
             const config = PLATAFORMAS[item.plataforma];
-            
             let estiloFondo = '';
             let clases = [config.class];
 
+            const colorFondo = (item.plataforma === 'HBO Max' || item.plataforma === 'Disney+') ? config.color.replace('var(--', '#').replace(')', '') : config.color;
+
             if (config.image) {
                 clases.push('fondo-plataforma');
-                // Estilo dinámico para la imagen de fondo con opacidad
-                estiloFondo = `background-image: url('${config.image}'); background-color: ${config.color.replace('var(--', 'rgba(').replace(')', ', 0.7)')};`;
+                estiloFondo = `background-image: url('${config.image}'); background-color: ${colorFondo.replace('#', 'rgba(') + (colorFondo.includes('var') ? '' : 'd0')};`;
             } else {
                 estiloFondo = `background-color: ${config.color};`;
             }
@@ -407,70 +558,37 @@
             const div = document.createElement('div');
             div.className = 'contenido ' + clases.join(' ');
             div.style = estiloFondo;
-            div.setAttribute('draggable', true); 
-            div.setAttribute('data-id', item.id); 
-            div.setAttribute('data-dia-origen', dia); 
+            div.setAttribute('draggable', true);
+            div.setAttribute('data-id', item.id);
+            div.setAttribute('data-dia-origen', dia);
 
             div.innerHTML = `
                 <span class="nombre-serie">${item.nombre}</span>
                 <button class="btn-eliminar" onclick="eliminarItem('${dia}', ${item.id})">x</button>
             `;
-
             div.addEventListener('dragstart', handleDragStart);
-
             return div;
         }
-
-        // Funciones de Drag and Drop
+        
         function handleDragStart(e) {
             e.dataTransfer.setData('itemId', e.target.getAttribute('data-id'));
             e.dataTransfer.setData('origenDia', e.target.getAttribute('data-dia-origen'));
         }
 
-        function handleDragOver(e) {
-            e.preventDefault(); 
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            e.currentTarget.classList.remove('drag-over');
-        }
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 
         function handleDrop(e) {
             e.preventDefault();
             e.currentTarget.classList.remove('drag-over');
             
-            // Obtener los datos del elemento arrastrado
             const itemId = e.dataTransfer.getData('itemId');
             const origenDia = e.dataTransfer.getData('origenDia');
-            
-            // Obtener el día de destino (la celda donde se soltó)
             const destinoDia = e.currentTarget.getAttribute('data-dia');
 
             if (origenDia && destinoDia && itemId) {
                 moverItem(origenDia, destinoDia, parseInt(itemId));
             }
-        }
-
-
-        function crearFormularioHTML(dia) {
-            const form = document.createElement('form');
-            form.className = 'form-agregar';
-            form.innerHTML = `
-                <input type="text" placeholder="Título de la serie/película" required name="nombre">
-                <select name="plataforma">
-                    ${Object.keys(PLATAFORMAS).map(p => `<option value="${p}">${p}</option>`).join('')}
-                </select>
-                <button type="submit">Agregar</button>
-            `;
-            form.onsubmit = function(event) {
-                event.preventDefault();
-                const nombre = event.target.nombre.value;
-                const plataforma = event.target.plataforma.value;
-                agregarItem(dia, nombre, plataforma);
-                event.target.nombre.value = '';
-            };
-            return form;
         }
 
         function dibujarCalendario() {
@@ -492,16 +610,18 @@
                         celda.appendChild(crearItemHTML(dia, item));
                     });
                 }
-                
-                celda.appendChild(crearFormularioHTML(dia));
             });
         }
         
-        // Iniciar el calendario y hacer la función de limpieza global
-        document.addEventListener('DOMContentLoaded', dibujarCalendario);
+        // Asignar funciones globales e inicializar el formulario único
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarFormularioUnico();
+            dibujarCalendario();
+        });
+        
+        // Exponer funciones necesarias globalmente
         window.eliminarItem = eliminarItem;
         window.limpiarPlantilla = limpiarPlantilla;
-        // La función moverItem es interna, no necesita estar en window.
         window.exportarCalendario = exportarCalendario;
         window.importarCalendario = importarCalendario;
     </script>
